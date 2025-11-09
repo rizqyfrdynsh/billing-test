@@ -464,6 +464,14 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
     const targetBulan = bulan || req.session.currentViewBulan || data.currentBulan || getBulanSekarang();
     
     const now = new Date();
+    const periodeInt = periode ? parseInt(periode) : 1;
+
+    // Auto-detect statusLangganan based on periode if not specified
+    let defaultStatusLangganan = 'Aktif';
+    if (periodeInt >= 12) {
+      defaultStatusLangganan = '1 Tahun';
+    }
+
     const pelanggan = {
       id: Date.now().toString(),
       nama,
@@ -472,8 +480,8 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
       jenisBayar: jenisBayar || 'Cash',
       status: status || 'Belum Lunas',
       bulan: targetBulan,
-      periode: periode ? parseInt(periode) : 1,
-      statusLangganan: statusLangganan || 'Aktif',
+      periode: periodeInt,
+      statusLangganan: statusLangganan || defaultStatusLangganan,
       jatuhTempo: jatuhTempo || hitungJatuhTempo(),
       tanggalBayar: tanggalBayar || (status === 'Lunas' ? now.toISOString() : null),
       createdAt: now.toISOString(),
@@ -530,7 +538,7 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
           status: 'Lunas', // Auto Lunas (already paid)
           bulan: nextBulan,
           periode: periodeInt,
-          statusLangganan: statusLangganan || 'Aktif',
+          statusLangganan: statusLangganan || defaultStatusLangganan,
           jatuhTempo: jatuhTempo || hitungJatuhTempo(),
           tanggalBayar: null, // No payment date (paid in first month)
           createdAt: now.toISOString(),
@@ -580,13 +588,19 @@ app.put('/api/pelanggan/:id', requireAuth, async (req, res) => {
     }
     
     const existingPelanggan = data.dataPerBulan[targetBulan][index];
-    
+
     const updatedPeriode = periode ? parseInt(periode) : existingPelanggan.periode || 1;
     const updatedStatus = status || existingPelanggan.status;
     const updatedNama = nama || existingPelanggan.nama;
     const updatedPaket = paket || existingPelanggan.paket;
     const updatedJenisBayar = jenisBayar || existingPelanggan.jenisBayar;
     const updatedJatuhTempo = jatuhTempo !== undefined ? jatuhTempo : existingPelanggan.jatuhTempo;
+
+    // Auto-detect statusLangganan based on periode if not specified
+    let defaultStatusLangganan = existingPelanggan.statusLangganan || 'Aktif';
+    if (statusLangganan === undefined && updatedPeriode >= 12) {
+      defaultStatusLangganan = '1 Tahun';
+    }
 
     data.dataPerBulan[targetBulan][index] = {
       ...existingPelanggan,
@@ -596,7 +610,7 @@ app.put('/api/pelanggan/:id', requireAuth, async (req, res) => {
       jenisBayar: updatedJenisBayar,
       status: updatedStatus,
       periode: updatedPeriode,
-      statusLangganan: statusLangganan !== undefined ? statusLangganan : existingPelanggan.statusLangganan || 'Aktif',
+      statusLangganan: statusLangganan !== undefined ? statusLangganan : defaultStatusLangganan,
       tanggalBayar: tanggalBayar !== undefined ? tanggalBayar : (status === 'Lunas' ? new Date().toISOString() : existingPelanggan.tanggalBayar),
       jatuhTempo: updatedJatuhTempo,
       // Optional charges (preserve existing if not provided)
@@ -654,7 +668,7 @@ app.put('/api/pelanggan/:id', requireAuth, async (req, res) => {
             status: 'Lunas', // Auto Lunas (already paid)
             bulan: nextBulan,
             periode: updatedPeriode,
-            statusLangganan: statusLangganan || existingPelanggan.statusLangganan || 'Aktif',
+            statusLangganan: statusLangganan || defaultStatusLangganan,
             jatuhTempo: updatedJatuhTempo || hitungJatuhTempo(),
             tanggalBayar: null, // No payment date (paid in first month)
             createdAt: now.toISOString(),
