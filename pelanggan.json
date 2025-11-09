@@ -2421,6 +2421,27 @@
         "jatuhTempo": "2025-12-12",
         "tanggalBayar": "2025-10-12",
         "createdAt": "2025-11-06T08:57:33.914Z"
+      },
+      {
+        "id": "1762718901593-2025-10-JUAN-auto",
+        "nama": "JUAN",
+        "paket": "15 Mbps",
+        "harga": 0,
+        "jenisBayar": "Transfer",
+        "status": "Lunas",
+        "bulan": "2025-10",
+        "tanggalBayar": null,
+        "createdAt": "2025-11-09T20:08:21.593646Z",
+        "jatuhTempo": "2026-01-01T00:00:00.000Z",
+        "lastResetDate": "2025-11-09T20:08:21.593648",
+        "periode": 12,
+        "statusLangganan": "Aktif",
+        "biayaInstalasi": 0,
+        "sewaPerangkat": 0,
+        "diskon": 0,
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       }
     ],
     "2025-11": [
@@ -3727,6 +3748,27 @@
         "jatuhTempo": "2025-12-09",
         "tanggalBayar": "2025-11-06",
         "createdAt": "2025-11-06"
+      },
+      {
+        "id": "1762718901593-2025-11-JUAN-auto",
+        "nama": "JUAN",
+        "paket": "15 Mbps",
+        "harga": 0,
+        "jenisBayar": "Transfer",
+        "status": "Lunas",
+        "bulan": "2025-11",
+        "tanggalBayar": null,
+        "createdAt": "2025-11-09T20:08:21.593682Z",
+        "jatuhTempo": "2026-01-01T00:00:00.000Z",
+        "lastResetDate": "2025-11-09T20:08:21.593683",
+        "periode": 12,
+        "statusLangganan": "Aktif",
+        "biayaInstalasi": 0,
+        "sewaPerangkat": 0,
+        "diskon": 0,
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       }
     ],
     "2025-09": [
@@ -4830,6 +4872,27 @@
         "tanggalBayar": null,
         "createdAt": "2025-10-31T18:11:49.183Z",
         "lastResetDate": "2025-10-31T17:33:52.473Z"
+      },
+      {
+        "id": "1762718901593-2025-09-JUAN-auto",
+        "nama": "JUAN",
+        "paket": "15 Mbps",
+        "harga": 0,
+        "jenisBayar": "Transfer",
+        "status": "Lunas",
+        "bulan": "2025-09",
+        "tanggalBayar": null,
+        "createdAt": "2025-11-09T20:08:21.593599Z",
+        "jatuhTempo": "2026-01-01T00:00:00.000Z",
+        "lastResetDate": "2025-11-09T20:08:21.593601",
+        "periode": 12,
+        "statusLangganan": "Aktif",
+        "biayaInstalasi": 0,
+        "sewaPerangkat": 0,
+        "diskon": 0,
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       }
     ],
     "2025-08": [
@@ -5933,6 +5996,27 @@
         "tanggalBayar": null,
         "createdAt": "2025-11-04T19:49:17.830Z",
         "lastResetDate": "2025-10-31T17:33:52.473Z"
+      },
+      {
+        "id": "1762718901593-2025-08-JUAN-auto",
+        "nama": "JUAN",
+        "paket": "15 Mbps",
+        "harga": 0,
+        "jenisBayar": "Transfer",
+        "status": "Lunas",
+        "bulan": "2025-08",
+        "tanggalBayar": null,
+        "createdAt": "2025-11-09T20:08:21.593507Z",
+        "jatuhTempo": "2026-01-01T00:00:00.000Z",
+        "lastResetDate": "2025-11-09T20:08:21.593520",
+        "periode": 12,
+        "statusLangganan": "Aktif",
+        "biayaInstalasi": 0,
+        "sewaPerangkat": 0,
+        "diskon": 0,
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       }
     ],
     "2025-01": [
@@ -15708,6 +15792,29 @@
         "sewaPerangkat": 0,
         "diskon": 0,
         "ppn": 0
+      }
+    ],
+    "2025-12": [
+      {
+        "id": "1762718901593-2025-12-JUAN-auto",
+        "nama": "JUAN",
+        "paket": "15 Mbps",
+        "harga": 0,
+        "jenisBayar": "Transfer",
+        "status": "Lunas",
+        "bulan": "2025-12",
+        "tanggalBayar": null,
+        "createdAt": "2025-11-09T20:08:21.593704Z",
+        "jatuhTempo": "2026-01-01T00:00:00.000Z",
+        "lastResetDate": "2025-11-09T20:08:21.593705",
+        "periode": 12,
+        "statusLangganan": "Aktif",
+        "biayaInstalasi": 0,
+        "sewaPerangkat": 0,
+        "diskon": 0,
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       }
     ]
   }
