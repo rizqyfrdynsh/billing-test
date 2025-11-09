@@ -502,9 +502,9 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
     }
     
     data.dataPerBulan[targetBulan].push(pelanggan);
-    
+
     // AUTO-CREATE for multi-month periode (e.g., 6 bulan, 1 tahun)
-    const periodeInt = parseInt(periode) || 1;
+    // periodeInt already declared above
     if (periodeInt > 1 && status === 'Lunas') {
       console.log(`🔄 Auto-creating ${periodeInt - 1} additional months for ${nama}`);
       console.log(`📅 Base month (targetBulan): ${targetBulan}`);
