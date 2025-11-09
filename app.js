@@ -581,17 +581,24 @@ app.put('/api/pelanggan/:id', requireAuth, async (req, res) => {
     
     const existingPelanggan = data.dataPerBulan[targetBulan][index];
     
+    const updatedPeriode = periode ? parseInt(periode) : existingPelanggan.periode || 1;
+    const updatedStatus = status || existingPelanggan.status;
+    const updatedNama = nama || existingPelanggan.nama;
+    const updatedPaket = paket || existingPelanggan.paket;
+    const updatedJenisBayar = jenisBayar || existingPelanggan.jenisBayar;
+    const updatedJatuhTempo = jatuhTempo !== undefined ? jatuhTempo : existingPelanggan.jatuhTempo;
+
     data.dataPerBulan[targetBulan][index] = {
       ...existingPelanggan,
-      nama: nama || existingPelanggan.nama,
-      paket: paket || existingPelanggan.paket,
+      nama: updatedNama,
+      paket: updatedPaket,
       harga: harga ? parseFloat(harga) : existingPelanggan.harga,
-      jenisBayar: jenisBayar || existingPelanggan.jenisBayar,
-      status: status || existingPelanggan.status,
-      periode: periode ? parseInt(periode) : existingPelanggan.periode || 1,
+      jenisBayar: updatedJenisBayar,
+      status: updatedStatus,
+      periode: updatedPeriode,
       statusLangganan: statusLangganan !== undefined ? statusLangganan : existingPelanggan.statusLangganan || 'Aktif',
       tanggalBayar: tanggalBayar !== undefined ? tanggalBayar : (status === 'Lunas' ? new Date().toISOString() : existingPelanggan.tanggalBayar),
-      jatuhTempo: jatuhTempo !== undefined ? jatuhTempo : existingPelanggan.jatuhTempo,
+      jatuhTempo: updatedJatuhTempo,
       // Optional charges (preserve existing if not provided)
       biayaInstalasi: biayaInstalasi !== undefined ? parseInt(biayaInstalasi) : (existingPelanggan.biayaInstalasi || 0),
       sewaPerangkat: sewaPerangkat !== undefined ? parseInt(sewaPerangkat) : (existingPelanggan.sewaPerangkat || 0),
@@ -602,12 +609,72 @@ app.put('/api/pelanggan/:id', requireAuth, async (req, res) => {
       ipAddress: ipAddress !== undefined ? ipAddress : (existingPelanggan.ipAddress || ''),
       macAddress: macAddress !== undefined ? macAddress : (existingPelanggan.macAddress || '')
     };
-    
+
+    // AUTO-CREATE for multi-month periode when updating to Lunas
+    // Only if periode changed to > 1 OR status changed to Lunas with periode > 1
+    const periodeChanged = updatedPeriode > existingPelanggan.periode;
+    const statusChangedToLunas = updatedStatus === 'Lunas' && existingPelanggan.status !== 'Lunas';
+
+    if (updatedPeriode > 1 && updatedStatus === 'Lunas' && (periodeChanged || statusChangedToLunas)) {
+      console.log(`🔄 [UPDATE] Auto-creating ${updatedPeriode - 1} additional months for ${updatedNama}`);
+      console.log(`📅 Base month (targetBulan): ${targetBulan}`);
+
+      // Create entries for subsequent months
+      for (let i = 1; i < updatedPeriode; i++) {
+        // Calculate next month using UTC to avoid timezone issues
+        const [year, month] = targetBulan.split('-').map(Number);
+
+        const nextMonth = month + i;
+        const nextYear = year + Math.floor((nextMonth - 1) / 12);
+        const nextMonthAdj = ((nextMonth - 1) % 12) + 1;
+
+        const nextBulan = `${nextYear}-${String(nextMonthAdj).padStart(2, '0')}`;
+
+        console.log(`📅 Base month: ${targetBulan}, Adding ${i} months → Result: ${nextBulan}`);
+
+        // Ensure dataPerBulan exists for next month
+        if (!data.dataPerBulan[nextBulan]) {
+          data.dataPerBulan[nextBulan] = [];
+        }
+
+        // Check if entry already exists for this customer in this month
+        const alreadyExists = data.dataPerBulan[nextBulan].some(
+          p => p.nama === updatedNama && p.periode === updatedPeriode && p.autoCreated === true
+        );
+
+        if (!alreadyExists) {
+          // Create entry with ZERO harga (already paid in first month)
+          const now = new Date();
+          const nextMonthEntry = {
+            id: Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substr(2, 9),
+            nama: updatedNama,
+            paket: updatedPaket,
+            harga: 0, // CRITICAL: No revenue for subsequent months
+            jenisBayar: updatedJenisBayar,
+            status: 'Lunas', // Auto Lunas (already paid)
+            bulan: nextBulan,
+            periode: updatedPeriode,
+            statusLangganan: statusLangganan || existingPelanggan.statusLangganan || 'Aktif',
+            jatuhTempo: updatedJatuhTempo || hitungJatuhTempo(),
+            tanggalBayar: null, // No payment date (paid in first month)
+            createdAt: now.toISOString(),
+            autoCreated: true, // Flag to identify auto-created entries
+            originalPaymentMonth: targetBulan // Reference to original payment month
+          };
+
+          data.dataPerBulan[nextBulan].push(nextMonthEntry);
+          console.log(`  ✅ Created entry for ${nextBulan} with harga: 0`);
+        } else {
+          console.log(`  ⚠️ Entry already exists for ${updatedNama} in ${nextBulan}`);
+        }
+      }
+    }
+
     // Update backward compatibility array if viewing current month
     if (targetBulan === data.currentBulan) {
       data.pelanggan = data.dataPerBulan[targetBulan];
     }
-    
+
     await writeData(data);
     res.json({ success: true, data: { pelanggan: data.dataPerBulan[targetBulan], bulan: targetBulan } });
   } catch (error) {
