@@ -8161,9 +8161,9 @@
         "id": "1762586727962-2025-02-66-wio8k3jon",
         "nama": "JUAN",
         "paket": "15 Mbps",
-        "harga": 1500000,
+        "harga": 0,
         "jenisBayar": "Transfer",
-        "status": "Belum Lunas",
+        "status": "Lunas",
         "bulan": "2025-02",
         "tanggalBayar": null,
         "createdAt": "2025-11-08T07:25:27.962Z",
@@ -8174,7 +8174,9 @@
         "biayaInstalasi": 0,
         "sewaPerangkat": 0,
         "diskon": 0,
-        "ppn": 0
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       },
       {
         "id": "1762586727962-2025-02-67-lw9bxk5ju",
@@ -9604,9 +9606,9 @@
         "id": "1762586727963-2025-03-66-s28wl8a2q",
         "nama": "JUAN",
         "paket": "15 Mbps",
-        "harga": 1500000,
+        "harga": 0,
         "jenisBayar": "Transfer",
-        "status": "Belum Lunas",
+        "status": "Lunas",
         "bulan": "2025-03",
         "tanggalBayar": null,
         "createdAt": "2025-11-08T07:25:27.963Z",
@@ -9617,7 +9619,9 @@
         "biayaInstalasi": 0,
         "sewaPerangkat": 0,
         "diskon": 0,
-        "ppn": 0
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       },
       {
         "id": "1762586727963-2025-03-67-g450qvbt6",
@@ -11047,9 +11051,9 @@
         "id": "1762586727965-2025-04-66-jqpl9bgbn",
         "nama": "JUAN",
         "paket": "15 Mbps",
-        "harga": 1500000,
+        "harga": 0,
         "jenisBayar": "Transfer",
-        "status": "Belum Lunas",
+        "status": "Lunas",
         "bulan": "2025-04",
         "tanggalBayar": null,
         "createdAt": "2025-11-08T07:25:27.965Z",
@@ -11060,7 +11064,9 @@
         "biayaInstalasi": 0,
         "sewaPerangkat": 0,
         "diskon": 0,
-        "ppn": 0
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       },
       {
         "id": "1762586727965-2025-04-67-ob3juwws0",
@@ -12490,9 +12496,9 @@
         "id": "1762586727966-2025-05-66-uoa8jt7mw",
         "nama": "JUAN",
         "paket": "15 Mbps",
-        "harga": 1500000,
+        "harga": 0,
         "jenisBayar": "Transfer",
-        "status": "Belum Lunas",
+        "status": "Lunas",
         "bulan": "2025-05",
         "tanggalBayar": null,
         "createdAt": "2025-11-08T07:25:27.966Z",
@@ -12503,7 +12509,9 @@
         "biayaInstalasi": 0,
         "sewaPerangkat": 0,
         "diskon": 0,
-        "ppn": 0
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       },
       {
         "id": "1762586727966-2025-05-67-e9595wrkz",
@@ -13933,9 +13941,9 @@
         "id": "1762586727968-2025-06-66-z278cv050",
         "nama": "JUAN",
         "paket": "15 Mbps",
-        "harga": 1500000,
+        "harga": 0,
         "jenisBayar": "Transfer",
-        "status": "Belum Lunas",
+        "status": "Lunas",
         "bulan": "2025-06",
         "tanggalBayar": null,
         "createdAt": "2025-11-08T07:25:27.968Z",
@@ -13946,7 +13954,9 @@
         "biayaInstalasi": 0,
         "sewaPerangkat": 0,
         "diskon": 0,
-        "ppn": 0
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       },
       {
         "id": "1762586727968-2025-06-67-9hje4ne4t",
@@ -15376,9 +15386,9 @@
         "id": "1762586727969-2025-07-66-a0ks97rem",
         "nama": "JUAN",
         "paket": "15 Mbps",
-        "harga": 1500000,
+        "harga": 0,
         "jenisBayar": "Transfer",
-        "status": "Belum Lunas",
+        "status": "Lunas",
         "bulan": "2025-07",
         "tanggalBayar": null,
         "createdAt": "2025-11-08T07:25:27.969Z",
@@ -15389,7 +15399,9 @@
         "biayaInstalasi": 0,
         "sewaPerangkat": 0,
         "diskon": 0,
-        "ppn": 0
+        "ppn": 0,
+        "autoCreated": true,
+        "originalPaymentMonth": "2025-01"
       },
       {
         "id": "1762586727969-2025-07-67-u5r6fxl0a",

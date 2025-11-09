@@ -183,13 +183,16 @@ async function resetBulanan(bulanBaru) {
     console.log(`🔍 Found source from previous month: ${bulanSebelumnya} (${pelangganBulanLalu.length} clients)`);
     
     // Copy dan reset untuk bulan baru
+    // EXCEPT for auto-created multi-period entries (already paid)
     const pelangganBulanBaru = pelangganBulanLalu.map(pelanggan => ({
       ...pelanggan,
-      status: 'Belum Lunas',
+      // CRITICAL FIX: Preserve 'Lunas' status for auto-created entries (multi-period payments)
+      status: (pelanggan.autoCreated === true && pelanggan.status === 'Lunas') ? 'Lunas' : 'Belum Lunas',
       bulan: targetBulan,
       // CRITICAL FIX: Copy jatuh tempo dari bulan lalu + 1 bulan (bukan default!)
       jatuhTempo: tambah1BulanJatuhTempo(pelanggan.jatuhTempo),
-      tanggalBayar: null,
+      // CRITICAL FIX: Preserve tanggalBayar: null for auto-created entries
+      tanggalBayar: (pelanggan.autoCreated === true) ? null : null,
       lastResetDate: new Date().toISOString()
     }));
     
@@ -751,12 +754,15 @@ app.post('/api/bulan', requireAuth, async (req, res) => {
         const previousBulan = getBulanSebelumnya(bulan);
         
         // Copy all clients and reset their payment status
+        // EXCEPT for auto-created multi-period entries (already paid)
         data.dataPerBulan[bulan] = sourceData.map(p => ({
           ...p,
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9), // New unique ID
-          status: 'Belum Lunas', // Reset status
+          // CRITICAL FIX: Preserve 'Lunas' status for auto-created entries (multi-period payments)
+          status: (p.autoCreated === true && p.status === 'Lunas') ? 'Lunas' : 'Belum Lunas',
           bulan: bulan,
-          tanggalBayar: null, // Clear payment date
+          // CRITICAL FIX: Preserve tanggalBayar: null for auto-created entries (payment was in original month)
+          tanggalBayar: (p.autoCreated === true) ? null : null, // Clear payment date
           // CRITICAL FIX: Use tambah1BulanJatuhTempo instead of hitungJatuhTempo
           jatuhTempo: tambah1BulanJatuhTempo(p.jatuhTempo),
           lastResetDate: new Date().toISOString()
