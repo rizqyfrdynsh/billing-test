@@ -183,13 +183,16 @@ async function resetBulanan(bulanBaru) {
     console.log(`🔍 Found source from previous month: ${bulanSebelumnya} (${pelangganBulanLalu.length} clients)`);
     
     // Copy dan reset untuk bulan baru
+    // EXCEPT for auto-created multi-period entries (already paid)
     const pelangganBulanBaru = pelangganBulanLalu.map(pelanggan => ({
       ...pelanggan,
-      status: 'Belum Lunas',
+      // CRITICAL FIX: Preserve 'Lunas' status for auto-created entries (multi-period payments)
+      status: (pelanggan.autoCreated === true && pelanggan.status === 'Lunas') ? 'Lunas' : 'Belum Lunas',
       bulan: targetBulan,
       // CRITICAL FIX: Copy jatuh tempo dari bulan lalu + 1 bulan (bukan default!)
       jatuhTempo: tambah1BulanJatuhTempo(pelanggan.jatuhTempo),
-      tanggalBayar: null,
+      // CRITICAL FIX: Preserve tanggalBayar: null for auto-created entries
+      tanggalBayar: (pelanggan.autoCreated === true) ? null : null,
       lastResetDate: new Date().toISOString()
     }));
     
@@ -461,6 +464,14 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
     const targetBulan = bulan || req.session.currentViewBulan || data.currentBulan || getBulanSekarang();
     
     const now = new Date();
+    const periodeInt = periode ? parseInt(periode) : 1;
+
+    // Auto-detect statusLangganan based on periode if not specified
+    let defaultStatusLangganan = 'Aktif';
+    if (periodeInt >= 12) {
+      defaultStatusLangganan = '1 Tahun';
+    }
+
     const pelanggan = {
       id: Date.now().toString(),
       nama,
@@ -469,8 +480,8 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
       jenisBayar: jenisBayar || 'Cash',
       status: status || 'Belum Lunas',
       bulan: targetBulan,
-      periode: periode ? parseInt(periode) : 1,
-      statusLangganan: statusLangganan || 'Aktif',
+      periode: periodeInt,
+      statusLangganan: statusLangganan || defaultStatusLangganan,
       jatuhTempo: jatuhTempo || hitungJatuhTempo(),
       tanggalBayar: tanggalBayar || (status === 'Lunas' ? now.toISOString() : null),
       createdAt: now.toISOString(),
@@ -491,9 +502,9 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
     }
     
     data.dataPerBulan[targetBulan].push(pelanggan);
-    
+
     // AUTO-CREATE for multi-month periode (e.g., 6 bulan, 1 tahun)
-    const periodeInt = parseInt(periode) || 1;
+    // periodeInt already declared above
     if (periodeInt > 1 && status === 'Lunas') {
       console.log(`🔄 Auto-creating ${periodeInt - 1} additional months for ${nama}`);
       console.log(`📅 Base month (targetBulan): ${targetBulan}`);
@@ -527,7 +538,7 @@ app.post('/api/pelanggan', requireAuth, async (req, res) => {
           status: 'Lunas', // Auto Lunas (already paid)
           bulan: nextBulan,
           periode: periodeInt,
-          statusLangganan: statusLangganan || 'Aktif',
+          statusLangganan: statusLangganan || defaultStatusLangganan,
           jatuhTempo: jatuhTempo || hitungJatuhTempo(),
           tanggalBayar: null, // No payment date (paid in first month)
           createdAt: now.toISOString(),
@@ -577,18 +588,31 @@ app.put('/api/pelanggan/:id', requireAuth, async (req, res) => {
     }
     
     const existingPelanggan = data.dataPerBulan[targetBulan][index];
-    
+
+    const updatedPeriode = periode ? parseInt(periode) : existingPelanggan.periode || 1;
+    const updatedStatus = status || existingPelanggan.status;
+    const updatedNama = nama || existingPelanggan.nama;
+    const updatedPaket = paket || existingPelanggan.paket;
+    const updatedJenisBayar = jenisBayar || existingPelanggan.jenisBayar;
+    const updatedJatuhTempo = jatuhTempo !== undefined ? jatuhTempo : existingPelanggan.jatuhTempo;
+
+    // Auto-detect statusLangganan based on periode if not specified
+    let defaultStatusLangganan = existingPelanggan.statusLangganan || 'Aktif';
+    if (statusLangganan === undefined && updatedPeriode >= 12) {
+      defaultStatusLangganan = '1 Tahun';
+    }
+
     data.dataPerBulan[targetBulan][index] = {
       ...existingPelanggan,
-      nama: nama || existingPelanggan.nama,
-      paket: paket || existingPelanggan.paket,
+      nama: updatedNama,
+      paket: updatedPaket,
       harga: harga ? parseFloat(harga) : existingPelanggan.harga,
-      jenisBayar: jenisBayar || existingPelanggan.jenisBayar,
-      status: status || existingPelanggan.status,
-      periode: periode ? parseInt(periode) : existingPelanggan.periode || 1,
-      statusLangganan: statusLangganan !== undefined ? statusLangganan : existingPelanggan.statusLangganan || 'Aktif',
+      jenisBayar: updatedJenisBayar,
+      status: updatedStatus,
+      periode: updatedPeriode,
+      statusLangganan: statusLangganan !== undefined ? statusLangganan : defaultStatusLangganan,
       tanggalBayar: tanggalBayar !== undefined ? tanggalBayar : (status === 'Lunas' ? new Date().toISOString() : existingPelanggan.tanggalBayar),
-      jatuhTempo: jatuhTempo !== undefined ? jatuhTempo : existingPelanggan.jatuhTempo,
+      jatuhTempo: updatedJatuhTempo,
       // Optional charges (preserve existing if not provided)
       biayaInstalasi: biayaInstalasi !== undefined ? parseInt(biayaInstalasi) : (existingPelanggan.biayaInstalasi || 0),
       sewaPerangkat: sewaPerangkat !== undefined ? parseInt(sewaPerangkat) : (existingPelanggan.sewaPerangkat || 0),
@@ -599,12 +623,72 @@ app.put('/api/pelanggan/:id', requireAuth, async (req, res) => {
       ipAddress: ipAddress !== undefined ? ipAddress : (existingPelanggan.ipAddress || ''),
       macAddress: macAddress !== undefined ? macAddress : (existingPelanggan.macAddress || '')
     };
-    
+
+    // AUTO-CREATE for multi-month periode when updating to Lunas
+    // Only if periode changed to > 1 OR status changed to Lunas with periode > 1
+    const periodeChanged = updatedPeriode > existingPelanggan.periode;
+    const statusChangedToLunas = updatedStatus === 'Lunas' && existingPelanggan.status !== 'Lunas';
+
+    if (updatedPeriode > 1 && updatedStatus === 'Lunas' && (periodeChanged || statusChangedToLunas)) {
+      console.log(`🔄 [UPDATE] Auto-creating ${updatedPeriode - 1} additional months for ${updatedNama}`);
+      console.log(`📅 Base month (targetBulan): ${targetBulan}`);
+
+      // Create entries for subsequent months
+      for (let i = 1; i < updatedPeriode; i++) {
+        // Calculate next month using UTC to avoid timezone issues
+        const [year, month] = targetBulan.split('-').map(Number);
+
+        const nextMonth = month + i;
+        const nextYear = year + Math.floor((nextMonth - 1) / 12);
+        const nextMonthAdj = ((nextMonth - 1) % 12) + 1;
+
+        const nextBulan = `${nextYear}-${String(nextMonthAdj).padStart(2, '0')}`;
+
+        console.log(`📅 Base month: ${targetBulan}, Adding ${i} months → Result: ${nextBulan}`);
+
+        // Ensure dataPerBulan exists for next month
+        if (!data.dataPerBulan[nextBulan]) {
+          data.dataPerBulan[nextBulan] = [];
+        }
+
+        // Check if entry already exists for this customer in this month
+        const alreadyExists = data.dataPerBulan[nextBulan].some(
+          p => p.nama === updatedNama && p.periode === updatedPeriode && p.autoCreated === true
+        );
+
+        if (!alreadyExists) {
+          // Create entry with ZERO harga (already paid in first month)
+          const now = new Date();
+          const nextMonthEntry = {
+            id: Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substr(2, 9),
+            nama: updatedNama,
+            paket: updatedPaket,
+            harga: 0, // CRITICAL: No revenue for subsequent months
+            jenisBayar: updatedJenisBayar,
+            status: 'Lunas', // Auto Lunas (already paid)
+            bulan: nextBulan,
+            periode: updatedPeriode,
+            statusLangganan: statusLangganan || defaultStatusLangganan,
+            jatuhTempo: updatedJatuhTempo || hitungJatuhTempo(),
+            tanggalBayar: null, // No payment date (paid in first month)
+            createdAt: now.toISOString(),
+            autoCreated: true, // Flag to identify auto-created entries
+            originalPaymentMonth: targetBulan // Reference to original payment month
+          };
+
+          data.dataPerBulan[nextBulan].push(nextMonthEntry);
+          console.log(`  ✅ Created entry for ${nextBulan} with harga: 0`);
+        } else {
+          console.log(`  ⚠️ Entry already exists for ${updatedNama} in ${nextBulan}`);
+        }
+      }
+    }
+
     // Update backward compatibility array if viewing current month
     if (targetBulan === data.currentBulan) {
       data.pelanggan = data.dataPerBulan[targetBulan];
     }
-    
+
     await writeData(data);
     res.json({ success: true, data: { pelanggan: data.dataPerBulan[targetBulan], bulan: targetBulan } });
   } catch (error) {
@@ -751,12 +835,15 @@ app.post('/api/bulan', requireAuth, async (req, res) => {
         const previousBulan = getBulanSebelumnya(bulan);
         
         // Copy all clients and reset their payment status
+        // EXCEPT for auto-created multi-period entries (already paid)
         data.dataPerBulan[bulan] = sourceData.map(p => ({
           ...p,
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9), // New unique ID
-          status: 'Belum Lunas', // Reset status
+          // CRITICAL FIX: Preserve 'Lunas' status for auto-created entries (multi-period payments)
+          status: (p.autoCreated === true && p.status === 'Lunas') ? 'Lunas' : 'Belum Lunas',
           bulan: bulan,
-          tanggalBayar: null, // Clear payment date
+          // CRITICAL FIX: Preserve tanggalBayar: null for auto-created entries (payment was in original month)
+          tanggalBayar: (p.autoCreated === true) ? null : null, // Clear payment date
           // CRITICAL FIX: Use tambah1BulanJatuhTempo instead of hitungJatuhTempo
           jatuhTempo: tambah1BulanJatuhTempo(p.jatuhTempo),
           lastResetDate: new Date().toISOString()
